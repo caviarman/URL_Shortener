@@ -13,7 +13,7 @@ export class ApiService {
   constructor(
     private http: HttpClient,
   ) { }
-  checkURL(url): Observable<any> {
-    return this.http.post<any>(`${this.host}/api/checkURL`, url);
+  shortenURL(data): Observable<any> {
+    return this.http.post<any>(`${this.host}/api/shortenURL`, data);
   }
 }
