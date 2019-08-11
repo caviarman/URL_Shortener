@@ -12,14 +12,16 @@ export class AppComponent implements OnInit {
   urlForm;
   host = environment.host;
   shortenURL;
+  title = 'urlShort';
+  isValidURL = true;
+  error = '';
 
   constructor(
     private formBuilder: FormBuilder,
     private api: ApiService,
-  ) {}
+  ) { }
 
-  title = 'urlShort';
-  isValidURL = true;
+
   pattern = new RegExp(/(https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|www\.[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9]+\.[^\s]{2,}|www\.[a-zA-Z0-9]+\.[^\s]{2,})/);
   ngOnInit() {
     this.urlForm = this.formBuilder.group({
@@ -29,18 +31,27 @@ export class AppComponent implements OnInit {
   }
 
   onSubmit(urlForm) {
+    this.error = '';
     console.log('sub', urlForm.value.baseURL);
-    if (!!urlForm.value.baseURL) {
-      this.api.shortenURL({ 
-        baseURL: urlForm.value.baseURL,
-        customURL: urlForm.value.customURL,
-      }).subscribe(res => {
-        console.log('res', res);
-        this.isValidURL = res.isValidURL;
-        if (!!res.shortenURL) {
-          this.shortenURL = `${this.host}/x/${res.shortenURL}`;
-        }
-      });
-    } 
+    this.api.checkURL({ base: urlForm.value.baseURL }).subscribe(res => {
+      console.log('res.data', res.data);
+      this.isValidURL = res.data;
+      if (this.isValidURL) {
+        this.api.shortenURL({
+          baseURL: urlForm.value.baseURL,
+          customURL: urlForm.value.customURL,
+        }).subscribe(res => {
+          console.log('res', res);
+          if (!!res.error) {
+            console.log('res.error', res.error);
+            this.error = res.error;
+          }
+          if (!!res.shortenURL) {
+            this.shortenURL = `${this.host}/x/${res.shortenURL}`;
+          }
+        });
+      }
+    });
+
   }
 }

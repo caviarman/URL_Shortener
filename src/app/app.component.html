@@ -17,6 +17,11 @@
     <div class="form-group">
       <label for="customUrl">Custom short url ending</label>
       <input formControlName="customURL" type="url" class="form-control" id="customUrl" placeholder="Enter desired short url ending">
+      <div *ngIf="error" class="alert alert-danger">
+        <div>
+            {{error}}
+        </div>
+    </div>
     </div>
     <button type="submit" class="btn btn-primary" [disabled]="urlForm.invalid">Generate</button>
   </form>

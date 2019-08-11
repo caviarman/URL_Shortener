@@ -16,4 +16,7 @@ export class ApiService {
   shortenURL(data): Observable<any> {
     return this.http.post<any>(`${this.host}/api/shortenURL`, data);
   }
+  checkURL(data): Observable<any> {
+    return this.http.post<any>(`${this.host}/api/checkURL`, data);
+  }
 }
