@@ -1,4 +1,4 @@
 export const environment = {
   production: true,
-  host: 'https://umbrella-shortener.herokuapp.com',
+  host: 'https://getshorturl.herokuapp.com/',
 };
