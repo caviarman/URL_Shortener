@@ -4,21 +4,7 @@ const path = require('path');
 const request = require('request');
 const cryptoRandomString = require('crypto-random-string');
 const { Pool } = require('pg');
-let db
-if (!!process.env.DATABASE_URL) {
-    db = new Pool({
-        connectionString: process.env.DATABASE_URL,
-        ssl: true
-    });
-} else {
-    db = new Pool({
-        user: 'postgres',
-        host: 'localhost',
-        database: 'shorturl',
-        password: 'Zydfhm2013',
-        port: 5432,
-    })
-}
+const db = require('./utils/database');
 
 const app = express();
 app.use((req, res, next) => {
@@ -37,27 +23,14 @@ app.use((req, res, next) => {
 app.use(bodyParser.json());
 app.use(express.static(__dirname + '/dist/urlShort'));
 
-app.get('/db', async (req, res) => {
-    try {
-        const client = await db.connect();
-        const result = await client.query('SELECT * FROM urls');
-        const results = { 'results': (result) ? result.rows : null };
-        console.log('rows', result.rows);
-        res.send({ data: results });
-        client.release();
-    } catch (err) {
-        console.error(err);
-        res.send("Error " + err);
+app.get('/x/:shorten', async (req, res) => {
+    const base = await db.getBaseByShorten(req.params['shorten']);
+    if (base.length > 0) {
+        res.redirect(301, base);
     }
-})
-
-app.get('/x/:shorten', (req, res) => {
-    console.log('XXXXXXXXXXx', req.params['shorten']);
-    res.redirect(301, 'https://snatchbot.me');
 });
 app.post('/api/checkURL', (req, res) => {
     const { base } = req.body;
-    console.log('base', base);
     request.head(base, (error, response) => {
         if (!!response && response.statusCode === 200) {
             res.send({ data: true });
@@ -67,41 +40,31 @@ app.post('/api/checkURL', (req, res) => {
     });
 });
 app.post('/api/shortenURL', async (req, res) => {
-    let error;
-    let shortenURL;
-    let status;
-    //const client = pool.connect();
     const { baseURL, customURL } = req.body;
-    console.log('RRRRRR', baseURL);
     if (!!customURL) {
         custom = encodeURI(customURL);
-        console.log('custom', custom);
-        try {
-            const client = await db.connect();
-            const result = await client.query('SELECT id FROM urls WHERE custom = $1', [custom]);
-            if (!!result && result.rows.length > 0) {
+            if (await db.isCustomExists(custom)) {
                 res.send({
-                status: false,
-                shortenURL: '',
-                error: 'Custom url is already exists',
-                });
+                    status: false,
+                    shortenURL: '',
+                    error: 'Custom url is already exists. Choose another one',
+                    });
             } else {
-                const result = await client.query('INSERT INTO urls (base, custom, shorten, createdAt, updatedAt) VALUES ($1, $2, $2, NOW(), NOW())', [baseURL, custom]);
+                await db.saveCustom(baseURL, custom);
                 res.send({
                     status: true,
                     shortenURL: custom,
                     error: null,
                     });
             }
-            client.release();
-        } catch {
-            console.error(err);
-            res.send({error: 'Error custom'});
-        }
-
-    } else {
-        hash = cryptoRandomString({ length: 10, type: 'url-safe' });
-        console.log('baseHash', hash);
+        } else {
+        shortStr = cryptoRandomString({ length: 10, type: 'url-safe' });
+        await db.saveShorten(baseURL, shortStr);
+        res.send({
+            status: true,
+            shortenURL: shortStr,
+            error: null,
+            });
     }
 });
 app.get('/*', function (req, res) {
