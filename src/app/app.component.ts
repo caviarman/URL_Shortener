@@ -32,18 +32,14 @@ export class AppComponent implements OnInit {
 
   onSubmit(urlForm) {
     this.error = '';
-    console.log('sub', urlForm.value.baseURL);
     this.api.checkURL({ base: urlForm.value.baseURL }).subscribe(res => {
-      console.log('res.data', res.data);
       this.isValidURL = res.data;
       if (this.isValidURL) {
         this.api.shortenURL({
           baseURL: urlForm.value.baseURL,
           customURL: urlForm.value.customURL,
         }).subscribe(res => {
-          console.log('res', res);
           if (!!res.error) {
-            console.log('res.error', res.error);
             this.error = res.error;
           }
           if (!!res.shortenURL) {

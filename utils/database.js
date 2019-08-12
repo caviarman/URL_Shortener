@@ -52,7 +52,6 @@ module.exports = {
         } catch {
             console.error(err);
         }
-
     },
 
     getBaseByShorten: async (shorten) => {
@@ -65,7 +64,6 @@ module.exports = {
             } else {
                 return '';
             }
-            
         } catch (err) {
             console.error(err);
         }
