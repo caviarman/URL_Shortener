@@ -26,7 +26,7 @@ export class AppComponent implements OnInit {
   ngOnInit() {
     this.urlForm = this.formBuilder.group({
       baseURL: ['', [Validators.required, Validators.pattern(this.pattern)]],
-      customURL: ['', [Validators.maxLength(10)]],
+      customURL: ['', ],
     });
   }
 

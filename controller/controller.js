@@ -23,6 +23,13 @@ module.exports = {
         const { baseURL, customURL } = req.body;
         if (!!customURL) {
             custom = encodeURI(customURL);
+            if (customURL.length > 10) {
+                res.send({
+                    status: false,
+                    shortenURL: '',
+                    error: 'You should enter no more than 10 characters',
+                });
+            }
             if (await db.isCustomExists(custom)) {
                 res.send({
                     status: false,
